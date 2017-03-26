@@ -76,7 +76,7 @@ namespace signin
         private void Form1_Load(object sender, EventArgs e)//-----------------------
         {
 
-            webBrowser1.ScriptErrorsSuppressed = false;//禁止弹出js错误
+            webBrowser1.ScriptErrorsSuppressed = true;//禁止弹出js错误
 
             IPHostEntry ipe = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ip;
