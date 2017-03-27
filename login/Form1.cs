@@ -4,12 +4,15 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace signin
 {
+    
     public partial class Form1 : Form
     {
+        
         static string authData = "authData.txt";
         static string authDataStr;
         static string[] authDataStrAll=new string[5];
@@ -44,7 +47,7 @@ namespace signin
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message.ToString(), "错误", MessageBoxButtons.OK);
+                //MessageBox.Show(ex.Message.ToString(), "错误", MessageBoxButtons.OK);
             }
 
         }
@@ -62,16 +65,37 @@ namespace signin
             }
 
         }
+        HtmlDocument doc;
+        private void checkSucceed()
+        {
+
+            Thread.Sleep(1000);
+            string A;
+            string html = doc.Body.OuterHtml;
+            if (html.Contains("您已经登录"))
+            {
+                A = "<html>\r\n<head>\r\n</head>\r\n<body>\r\n<p> 登录成功！</p>\r\n</body>\r\n</html>";
+            }
+            else
+            {
+                A = "<html>\r\n<head>\r\n</head>\r\n<body>\r\n<p> 登录失败，请重新点击一键登录！</p>\r\n</body>\r\n</html>";
+            }
+            webBrowser1.DocumentText = A;
+        }
+
 
         private void webBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
-            HtmlDocument doc = webBrowser1.Document;
+             doc = webBrowser1.Document;
             doc.GetElementById("useridtemp").InnerText = idNum.Text;
             doc.GetElementById("passwd").InnerText = password.Text;
             doc.GetElementById("passwd").Focus();
             SendKeys.SendWait("{ENTER}");
-
+            Thread th1 = new Thread(new ThreadStart(checkSucceed));
+            th1.Start();
         }
+
+        
 
         private void Form1_Load(object sender, EventArgs e)//-----------------------
         {
