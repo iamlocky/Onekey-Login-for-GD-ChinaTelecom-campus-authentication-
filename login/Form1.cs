@@ -22,6 +22,8 @@ namespace signin
         static int sec;
         static string urltmp = "http://219.136.125.139/portalReceiveAction.do?wlanacname=gzucm&wlanuserip=";
         static string cyber = "http://cy-ber.cn";
+        HtmlDocument doc;
+
         public Form1()
         {
             InitializeComponent();
@@ -42,10 +44,10 @@ namespace signin
             try
             {
                 
-                webBrowser1.Navigate(url);
+                webBrowser1.Navigate(url);//打开认证链接
                 saveData();
             }
-            catch (Exception ex)
+            catch
             {
                 //MessageBox.Show(ex.Message.ToString(), "错误", MessageBoxButtons.OK);
             }
@@ -57,21 +59,32 @@ namespace signin
 
         }
 
-        public void check()
+        public bool check()//检测页面是否加载完全
         {
-            while (webBrowser1.ReadyState != WebBrowserReadyState.Complete)
+            if (webBrowser1.ReadyState == WebBrowserReadyState.Complete)
             {
-                return;
+                return true;
+            }else
+            {
+                return false;
             }
 
         }
-        HtmlDocument doc;
+        
         private void checkSucceed()
         {
-
-            Thread.Sleep(1000);
             string A;
-            string html = doc.Body.OuterHtml;
+            while(doc.Body==null)
+            {
+                Thread.Sleep(300);
+            }
+            string html="";
+            try
+            {
+                 html= doc.Body.OuterHtml;
+            }
+            catch { return; }
+            
             if (html.Contains("您已经登录"))
             {
                 A = "<html>\r\n<head>\r\n</head>\r\n<body>\r\n<p> 登录成功！</p>\r\n</body>\r\n</html>";
@@ -86,6 +99,10 @@ namespace signin
 
         private void webBrowser1_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
+            if(!check())
+            {
+                return;
+            }
              doc = webBrowser1.Document;
             doc.GetElementById("useridtemp").InnerText = idNum.Text;
             doc.GetElementById("passwd").InnerText = password.Text;
@@ -99,22 +116,23 @@ namespace signin
 
         private void Form1_Load(object sender, EventArgs e)//-----------------------
         {
-
+            
             webBrowser1.ScriptErrorsSuppressed = true;//禁止弹出js错误
 
             IPHostEntry ipe = Dns.GetHostEntry(Dns.GetHostName());
             IPAddress ip;
             string iptext;
-            ip = ipe.AddressList[1];
-            iptext = ip.ToString();
-            if (isExists(iptext))
+            for(int i=1;i<ipe.AddressList.Length;i++)
             {
-                ip = ipe.AddressList[2];
+                ip = ipe.AddressList[i];
                 iptext = ip.ToString();
+                if (!isExists(iptext))
+                {
+                    ipAddress.Text = iptext;
+                    loadData();
+                    break;
+                }
             }
-
-            ipAddress.Text = iptext;
-            loadData();
         }
 
 
@@ -140,8 +158,8 @@ namespace signin
         private void timer1_Tick(object sender, EventArgs e)
         {
 
-            DateTime currentTime = new System.DateTime();
-            currentTime = System.DateTime.Now;
+            DateTime currentTime = new DateTime();
+            currentTime = DateTime.Now;
             hour = currentTime.Hour;
             min = currentTime.Minute;
             sec = currentTime.Second;
